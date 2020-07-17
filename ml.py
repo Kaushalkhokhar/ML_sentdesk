@@ -79,8 +79,8 @@ def demo_linear_regression():
 
 # demo_linear_regression()
 
-# Best fit line and slope
-def best_fit_line_and_slop():
+# Best fit line, slope and r_squared
+def best_fit_line_and_slop_r_squared():
 
         from statistics import mean
 
@@ -98,7 +98,19 @@ def best_fit_line_and_slop():
 
         m, b = best_fit_slope_and_intercept(x, y)
 
+        def squared_error(y_orig, y_line):
+                return sum((y_line-y_orig)**2)
+
+        def coefficent_of_deterrmination(y_orig, y_line):
+                y_mean_line = [mean(y_orig) for y in y_orig]                
+                squared_error_regr = squared_error(y_orig, y_line) 
+                squared_error_y_mean = squared_error(y_orig, y_mean_line)
+                return 1 - (squared_error_regr / squared_error_y_mean)
+
         regression_line = [ (m*i)+b for i in x]
+
+        r_squared = coefficent_of_deterrmination(y,regression_line)
+        print(r_squared)
 
         predict_x = 8
         predict_y = (m*predict_x) + b
@@ -108,4 +120,5 @@ def best_fit_line_and_slop():
         plt.plot(x, regression_line)
         plt.show()
 
-# best_fit_line_and_slop()
+best_fit_line_and_slop_r_squared()
+
