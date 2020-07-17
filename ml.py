@@ -1,7 +1,7 @@
 import pandas as pd
 import quandl, math, datetime
 import numpy as np
-from sklearn import preprocessing, svm
+from sklearn import preprocessing, svm, neighbors
 from sklearn.model_selection import cross_validate, train_test_split
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt 
@@ -39,8 +39,9 @@ def demo_linear_regression():
 
         X = np.array(df.drop(['label'],1))
         X = preprocessing.scale(X)
-        X = X[:-forecast_out]
         X_lately = X[-forecast_out:]
+        X = X[:-forecast_out]
+
         df.dropna(inplace=True) # to drop out nan values 
         y = np.array(df['label'])
 
@@ -72,12 +73,12 @@ def demo_linear_regression():
 
         df['Adj. Close'].plot()
         df['Forecast'].plot()
-        plt.legend(loc=1)
+        plt.legend(loc=2)
         plt.xlabel('Data')
         plt.ylabel('Price')
         plt.show()
 
-# demo_linear_regression()
+#demo_linear_regression()
 
 # Best fit line, slope and r_squared
 def best_fit_line_and_slop_r_squared():
@@ -120,5 +121,88 @@ def best_fit_line_and_slop_r_squared():
         plt.plot(x, regression_line)
         plt.show()
 
-best_fit_line_and_slop_r_squared()
+#best_fit_line_and_slop_r_squared()
 
+# testing assumption
+def test_assumptioin():
+
+        from statistics import mean
+        import random
+
+        style.use('fivethirtyeight')       
+
+        def create_dataset(hm, variance, step=2, correlation=False):
+                val = 1
+                ys = []
+                for i in range(hm):
+                        y = val + random.randrange(-variance, variance)
+                        ys.append(y)
+                        if correlation and correlation == 'pos':
+                                val += step
+                        elif correlation and correlation == 'neg':
+                                val -= step
+
+                xs = [ i for i in range(hm)]
+
+                return np.array(ys, dtype=np.float64), np.array(xs, dtype=np.float64) 
+        
+        y, x = create_dataset(40, 40, 2, correlation='pos')
+
+        def best_fit_slope_and_intercept(x ,y):
+                slope = ( (mean(x)*mean(y) - mean(x*y)) /
+                        (mean(x)**2 - mean(x**2)) )
+
+                intercept = mean(y) - slope*mean(x)
+                return slope, intercept 
+
+        m, b = best_fit_slope_and_intercept(x, y)
+
+        def squared_error(y_orig, y_line):
+                return sum((y_line-y_orig)**2)
+
+        def coefficent_of_deterrmination(y_orig, y_line):
+                y_mean_line = [mean(y_orig) for y in y_orig]                
+                squared_error_regr = squared_error(y_orig, y_line) 
+                squared_error_y_mean = squared_error(y_orig, y_mean_line)
+                return 1 - (squared_error_regr / squared_error_y_mean)
+
+        regression_line = [ (m*i)+b for i in x]
+
+        r_squared = coefficent_of_deterrmination(y,regression_line)
+        print(r_squared)
+
+        predict_x = 8
+        predict_y = (m*predict_x) + b
+
+        plt.scatter(x, y)
+        #plt.scatter(predict_x, predict_y)
+        plt.plot(x, regression_line)
+        plt.show()
+
+#test_assumptioin()
+
+# Classification
+
+def KNeighbors_Classifier():
+        df = pd.read_csv("breast-cancer-wisconsin.data")
+        df.replace('?', -99999, inplace=True)
+        df.drop(['id'], 1, inplace=True)
+
+        X = np.array(df.drop(['class'], 1))
+        y = np.array(df['class'])
+
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+        clf = neighbors.KNeighborsClassifier()
+        clf.fit(X_train, y_train)
+
+        accuracy = clf.score(X_test, y_test)
+        print(accuracy)
+
+        example_measure = np.array([[4,2,1,1,1,2,3,2,1]]) # double bracket is for len at bottom line
+        example_measure = example_measure.reshape(len(example_measure),-1)
+
+        example_predict = clf.predict(example_measure)
+        print(example_predict)
+
+# KNeighbors_Classifier()
