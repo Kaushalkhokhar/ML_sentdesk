@@ -206,3 +206,51 @@ def KNeighbors_Classifier():
         print(example_predict)
 
 # KNeighbors_Classifier()
+
+# Euclidean Distance
+from math import sqrt
+import warnings
+from collections import Counter
+
+def KNeighbors_alogorithm():
+
+        style.use('fivethirtyeight')
+
+        dataset = {'k': [[1,2], [2,3], [3,1]], 
+                        'r': [[6,5], [5,7], [8,6]]}
+        new_features = [5,7]
+
+        def k_nearest_neighbors(data, predict, k=3):
+                if len(data) >= k:
+                        warnings.warn('K is set ot a value less than total voting group')
+                distances = []
+                for group in data:
+                        for features in data[group]:
+                                euclidean_distance = np.linalg.norm(np.array(features)-np.array(predict)) # this is same as squrt( (point1[0] - point2[0])**2 + (point1[1] - point2[1])**2 )
+                                # or
+                                # euclidean_distance = np.array(np.sum(np.array(features)-np.array(predict))**2) # this is same as squrt( (point1[0] - point2[0])**2 + (point1[1] - point2[1])**2 )
+                                distances.append([euclidean_distance, group])
+                
+                votes = [i[1] for i in sorted(distances)[:k]]
+                print(votes)
+                print(Counter(votes).most_common(1))
+                vote_result = Counter(votes).most_common(1)[0][0]
+
+                return vote_result
+        
+        result = k_nearest_neighbors(dataset, new_features, k=3)
+        print(result)
+
+        # for i in dataset:
+        #         print(i)
+        #         for ii in dataset[i]:
+        #                 print(ii)
+        #                 plt.scatter(ii[0], ii[1], s=100, color=i)
+
+        # or use below
+
+        # [[plt.scatter(ii[0], ii[1], s=100, color=i) for ii in i] for i in dataset]
+        
+        #plt.show()
+
+KNeighbors_alogorithm()
