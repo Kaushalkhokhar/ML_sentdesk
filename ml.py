@@ -308,136 +308,219 @@ def applying_knn_to_data():
 
 # applying_knn_to_data()
 
-class Support_Vector_Machine():
+def svm_classifier():
+        class Support_Vector_Machine():
 
-        def __init__(self, visulization=True):
-                self.visulization = visulization
-                self.colors = {-1:'r', 1: 'b'}
-                if self.visulization:
-                        self.fig = plt.figure()
-                        self.ax = self.fig.add_subplot(1,1,1)
+                def __init__(self, visulization=True):
+                        self.visulization = visulization
+                        self.colors = {-1:'r', 1: 'b'}
+                        if self.visulization:
+                                self.fig = plt.figure()
+                                self.ax = self.fig.add_subplot(1,1,1)
 
-        def fit(self, data):
-                self.data = data
-                # || W || : [w,b]
-                opt_dict = {}
+                def fit(self, data):
+                        self.data = data
+                        # || W || : [w,b]
+                        opt_dict = {}
 
-                transforms = [ [1, 1],
-                              [-1, 1],
-                              [-1, -1],
-                              [1, -1] ]
+                        transforms = [ [1, 1],
+                                [-1, 1],
+                                [-1, -1],
+                                [1, -1] ]
 
-                all_data = []
-                for yi in self.data:
-                        for fetures in self.data[yi]:
-                                for feture in fetures:
-                                        all_data.append(feture)
+                        all_data = []
+                        for yi in self.data:
+                                for fetures in self.data[yi]:
+                                        for feture in fetures:
+                                                all_data.append(feture)
 
-                self.max_feature_value = max(all_data)
-                self.min_feature_value = min(all_data)
-                all_data = None
+                        self.max_feature_value = max(all_data)
+                        self.min_feature_value = min(all_data)
+                        all_data = None
 
-                step_sizes = [self.max_feature_value*0.1,
-                              self.max_feature_value*0.01,
-                              # point of expense
-                              self.max_feature_value*0.001]
+                        step_sizes = [self.max_feature_value*0.1,
+                                self.max_feature_value*0.01,
+                                # point of expense
+                                self.max_feature_value*0.001]
 
-                # extremely expensive
-                b_range_multiple = 5
-                #
-                b_multiple = 5
+                        # extremely expensive
+                        b_range_multiple = 5
+                        #
+                        b_multiple = 5
 
-                latest_optimum = self.max_feature_value*10
+                        latest_optimum = self.max_feature_value*10
 
-                for step in step_sizes:
-                        w = np.array([latest_optimum, latest_optimum])
-                        # we can do this because convex
-                        optimized = False
-                        while not optimized:
-                                for b in np.arange(-1*(self.max_feature_value*b_range_multiple),
-                                                   (self.max_feature_value*b_range_multiple), 
-                                                   step*b_multiple):
-                                        for transformation in transforms:
-                                                w_t = w*transformation
-                                                found_option = True
-                                                # yi*(w*xi + b) >= 1
-                                                for i in self.data:
-                                                        for xi in self.data[i]:
-                                                                yi = i
-                                                                if not yi*(np.dot(w_t,xi) + b) >= 1:
-                                                                        found_option = False
+                        for step in step_sizes:
+                                w = np.array([latest_optimum, latest_optimum])
+                                # we can do this because convex
+                                optimized = False
+                                while not optimized:
+                                        for b in np.arange(-1*(self.max_feature_value*b_range_multiple),
+                                                        (self.max_feature_value*b_range_multiple), 
+                                                        step*b_multiple):
+                                                for transformation in transforms:
+                                                        w_t = w*transformation
+                                                        found_option = True
+                                                        # yi*(w*xi + b) >= 1
+                                                        for i in self.data:
+                                                                for xi in self.data[i]:
+                                                                        yi = i
+                                                                        if not yi*(np.dot(w_t,xi) + b) >= 1:
+                                                                                found_option = False
 
-                                                if found_option:                                                        
-                                                        opt_dict[np.linalg.norm] = [w_t, b]
+                                                        if found_option:                                                        
+                                                                opt_dict[np.linalg.norm(w_t)] = [w_t, b]
+                                        
+                                        if w[0] < 0:
+                                                optimized = True
+                                                print('Optimized a step')                                        
+                                                                                        
+                                        else:
+                                                w = w - step
                                 
-                                if w[0] < 0:
-                                        optimized = True
-                                        print('Optimized a step')                                        
-                                                                                
-                                else:
-                                        w = w - step
-                        norms = sorted([n for n in opt_dict])
-                        opt_choice = opt_dict[norms[0]]
-                        self.w = opt_choice[0]
-                        self.b = opt_choice[1]
-                        latest_optimum = opt_choice[0][0]*2
+                                # print(len(opt_dict))
+                                norms = sorted([n for n in opt_dict])
+                                opt_choice = opt_dict[norms[0]]
+                                self.w = opt_choice[0]
+                                self.b = opt_choice[1]
+                                latest_optimum = opt_choice[0][0]*2
+                                
+                def predict(self, features):
+                        # sign(x.w + b)
+                        classification = np.sign(np.dot(np.array(features), self.w) + self.b)
+                        if classification != 0 and self.visulization:
+                                (self.ax.scatter(features[0], features[1], s=200, marker='*', c=self.colors[classification]))
+                        return classification
+
+                def visulize(self):
+                        [[self.ax.scatter(x[0], x[1], s=100, color=self.colors[i]) for x in data_dict[i]] for i in data_dict]
+                        # hyperplane = x.w +b
+                        # v =x.w+b
+                        # psv = 1
+                        # nsv = -1
+                        # dec = 0
+                        def hyperplane(x, w, b, v):
+                                return (-w[0]*x-b+v) / w[1]      
+
+                        datarange = (self.min_feature_value*0.9, self.max_feature_value*1.1)
+                        hyp_x_min = datarange[0]
+                        hyp_x_max = datarange[1]
+
+                        # (w.x + b) = 1
+                        # postitive support vector hyperplane
+                        psv1 = hyperplane(hyp_x_min, self.w, self.b, 1)
+                        psv2 = hyperplane(hyp_x_max, self.w, self.b, 1)
+                        self.ax.plot([hyp_x_min, hyp_x_max], [psv1, psv2])
+
+                        # (w.x + b) = -1
+                        # postitive support vector hyperplane
+                        nsv1 = hyperplane(hyp_x_min, self.w, self.b, -1)
+                        nsv2 = hyperplane(hyp_x_max, self.w, self.b, -1)
+                        self.ax.plot([hyp_x_min, hyp_x_max], [nsv1, nsv2])
+
+                        # (w.x + b) = 0
+                        # postitive support vector hyperplane
+                        db1 = hyperplane(hyp_x_min, self.w, self.b, 0)
+                        db2 = hyperplane(hyp_x_max, self.w, self.b, 0)
+                        self.ax.plot([hyp_x_min, hyp_x_max], [db1, db2])
+
+                        plt.show()
+                
+        data_dict = {-1:np.array([[1, 5],
+                        [2, 7],
+                        [1, 6],]), 
+                1:np.array([[5, 2],
+                        [6, -1],
+                        [7, 3],])}
+
+
+        clf = Support_Vector_Machine()
+        clf.fit(data=data_dict)
+
+        predict = [[1, 5], [3, 7], [7, 0], [6, -2]]
+        for p in predict:
+                clf.predict(p)
+
+        clf.visulize()
+
+# svm_classifier()
+
+def kmeans_with_titanic_data():
+        # Clustering
+        style.use('ggplot')
+        from sklearn.cluster import KMeans
+
+        # X = np.array([[1, 2], 
+        #              [1.5, 1.8],
+        #              [5, 8],
+        #              [8, 8], 
+        #              [1, 0.6],
+        #              [9, 11]])
+
+        # # plt.scatter(X[:, 0], X[:, 1], s=100)
+        # # plt.show()
+
+        # clf = KMeans(n_clusters=3)
+        # clf.fit(X)
+
+        # centroids = clf.cluster_centers_
+        # labels = clf.labels_
+
+        # colors = 10*["g.", "r.", "c.", "b.", "k."]
+
+        # for i in range(len(X)):
+        #         plt.plot(X[i][0], X[i][1], colors[labels[i]], markersize = 15)
+
+        # plt.scatter(centroids[:, 0], centroids[:, 1], marker='x', s=100, linewidths=5)
+        # plt.show()
+
+        df = pd.read_excel('titanic.xls')
+        df.drop(['body','name'], 1, inplace=True)
+        df.apply(pd.to_numeric, errors='ignore')
+        df.fillna(0, inplace=True)
+
+
+        def handle_non_numeric_data(df):
+                columns = df.columns.values
+
+                for column in columns:
+                        text_digit_vals = {}
+                        def convert_to_int(val):
+                                return text_digit_vals[val]
                         
-                                               
+                        if df[column].dtype != np.int64 and df[column].dtype != np.float64:
+                                column_contents = df[column].values.tolist()
+                                unique_elements = set(column_contents)
+                                x = 0
+                                for unique in unique_elements:
+                                        if unique not in text_digit_vals:
+                                                text_digit_vals[unique] = x
+                                                x += 1
+
+                                df[column] = list(map(convert_to_int, df[column]))
+
+                return df
+
+        df = handle_non_numeric_data(df)
+
+        df.drop(['boat', 'sex'], 1, inplace=True)
+        print(df.head())
+        X = np.array(df.drop(['survived'], 1).astype(float))
+        X = preprocessing.scale(X)
+        y = np.array(df['survived'])
+
+        clf = KMeans(n_clusters=2)
+        clf.fit(X)
+
+        correct = 0
+        for i in range(len(X)):
+                predict_me = np.array(X[i].astype(float))
+                predict_me = predict_me.reshape(-1, len(predict_me))
+                prediction = clf.predict(predict_me)
+
+                if prediction[0] == y[i]:
+                        correct += 1
+
+        print(correct/len(X))
         
-        def predict(self, features):
-                # sign(x.w + b)
-                classification = np.sign(np.dot(np.array(features), self.w) + self.b)
-                if classification != 0 and self.visulization:
-                        (self.ax.scatter(features[0], features[1], s=200, marker='*', c=self.colors[classification]))
-                return classification
-
-        def visulize(self):
-                [[self.ax.scatter(x[0], x[1], s=100, color=self.colors[i]) for x in data_dict[i]] for i in data_dict]
-                # hyperplane = x.w +b
-                # v =x.w+b
-                # psv = 1
-                # nsv = -1
-                # dec = 0
-                def hyperplane(x, w, b, v):
-                        return (-w[0]*x-b+v) / w[1]      
-
-                datarange = (self.min_feature_value*0.9, self.max_feature_value*1.1)
-                hyp_x_min = datarange[0]
-                hyp_x_max = datarange[1]
-
-                # (w.x + b) = 1
-                # postitive support vector hyperplane
-                psv1 = hyperplane(hyp_x_min, self.w, self.b, 1)
-                psv2 = hyperplane(hyp_x_max, self.w, self.b, 1)
-                self.ax.plot([hyp_x_min, hyp_x_max], [psv1, psv2])
-
-                # (w.x + b) = -1
-                # postitive support vector hyperplane
-                nsv1 = hyperplane(hyp_x_min, self.w, self.b, -1)
-                nsv2 = hyperplane(hyp_x_max, self.w, self.b, -1)
-                self.ax.plot([hyp_x_min, hyp_x_max], [nsv1, nsv2])
-
-                # (w.x + b) = 0
-                # postitive support vector hyperplane
-                db1 = hyperplane(hyp_x_min, self.w, self.b, 0)
-                db2 = hyperplane(hyp_x_max, self.w, self.b, 0)
-                self.ax.plot([hyp_x_min, hyp_x_max], [db1, db2])
-
-                plt.show()
-        
-data_dict = {-1:np.array([[1, 5],
-                     [2, 7],
-                     [1, 6],]), 
-          1:np.array([[5, 2],
-                      [6, -1],
-                      [7, 3],])}
-
-
-clf = Support_Vector_Machine()
-clf.fit(data=data_dict)
-
-predict = [[1, 5], [3, 8], [9, 0], [6, -2]]
-for p in predict:
-        clf.predict(p)
-
-clf.visulize()
+# kmeans_with_titanic_data()
